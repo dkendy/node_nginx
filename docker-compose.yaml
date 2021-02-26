@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+   
+  app:
+    build:
+      context: ./node
+      dockerfile: dockerfile
+    container_name: nodeapp
+    image: dkendy/nodejs
+    entrypoint: dockerize -wait tcp://dbNode:3306 -timeout 20s docker-entrypoint.sh
+    command: bash -c "npm install -g npm@7.5.6 && npm install && npm install express && npm install mysql && npm install mysql2-promise --save && npm install --save bootstrap && node index.js"
+    networks: 
+      - node-network
+    volumes: 
+      - ./node:/usr/src/app
+    tty: true 
+    depends_on: 
+      - dbnode
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    image: dkendy/nginx
+    container_name: nginx
+    networks: 
+      - node-network
+    ports: 
+      - "8080:80"
+    depends_on: 
+      - app
+
+  dbnode:
+    build:
+      context: ./setupmysql
+      dockerfile: dockerfile
+    command: --innodb-use-native-aio=0
+    container_name: dbNode 
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql/:rw 
+    environment: 
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+    networks: 
+      - node-network
+
+networks:
+  node-network:
+    driver: bridge
