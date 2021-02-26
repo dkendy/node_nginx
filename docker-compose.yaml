@@ -9,7 +9,7 @@ services:
     container_name: nodeapp
     image: dkendy/nodejs
     entrypoint: dockerize -wait tcp://dbNode:3306 -timeout 20s docker-entrypoint.sh
-    command: bash -c "npm install -g npm@7.5.6 && npm install && npm install express && npm install mysql && npm install mysql2-promise --save && npm install --save bootstrap && node index.js"
+    command: bash -c "npm install -g npm@7.5.6 && npm install && npm install express && npm install mysql && node index.js"
     networks: 
       - node-network
     volumes: 
